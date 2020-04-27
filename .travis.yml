@@ -3,7 +3,8 @@ git:
   submodules: false
 jobs:
   allow_failures:
-    - name: Snap arm64
+    - stage: deploy
+      name: Snap arm64
   include:
     # - stage: test
     #   name: "Debian"
@@ -40,13 +41,13 @@ jobs:
       script: ./.travis/build-snap.sh
       deploy:
         - provider: script
-          script: sudo ./.travis/deploy-snap.sh edge
+          script: exit 0
           skip_cleanup: true
           on:
             branch: master
             tags: false
         - provider: script
-          script: sudo ./.travis/deploy-snap.sh edge,beta
+          script: exit 1
           skip_cleanup: true
           on:
             branch: master
