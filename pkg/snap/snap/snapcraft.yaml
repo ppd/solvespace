@@ -18,6 +18,8 @@ license: GPL-3.0
 layout:
   /usr/share/solvespace:
     symlink: $SNAP/usr/share/solvespace
+  /etc/ld.so.cache:
+    bind-file: $SNAP_DATA/etc/ld.so.cache
 
 apps:
   solvespace:
@@ -26,6 +28,7 @@ apps:
     extensions: [gnome-3-34]
     plugs: [opengl, unity7, home, removable-media, gsettings, network]
     environment:
+      FINAL_BINARY: $SNAP/usr/bin/solvespace
       __EGL_VENDOR_LIBRARY_DIRS: $SNAP/gnome-platform/usr/share/glvnd/egl_vendor.d:$SNAP/usr/share/glvnd/egl_vendor.d
   cli:
     command: usr/bin/solvespace-cli
@@ -64,6 +67,16 @@ parts:
     stage-packages:
       - libspnav0
       - libsigc++-2.0-0v5
+
+  extensible-hooks: # dependency of ld-precache
+    plugin: dump
+    source: https://github.com/diddlesnaps/snapcraft-utils-library.git
+    source-subdir: snapcraft-assets/extensible-hooks
+
+  ld-precache:
+    plugin: dump
+    source: https://github.com/diddlesnaps/snapcraft-utils-library.git
+    source-subdir: snapcraft-assets/ld-precache
 
   cleanup:
     after: [solvespace]
