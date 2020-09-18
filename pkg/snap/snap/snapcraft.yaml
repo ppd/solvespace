@@ -24,13 +24,18 @@ apps:
     command: usr/bin/solvespace
     desktop: solvespace.desktop
     extensions: [gnome-3-34]
-    plugs: [opengl, unity7, home, removable-media, gsettings, network]
-    environment:
+    plugs: &solvespaceplugs [opengl, unity7, home, removable-media, gsettings, network]
+    environment: &solvespaceenv
       __EGL_VENDOR_LIBRARY_DIRS: $SNAP/gnome-platform/usr/share/glvnd/egl_vendor.d:$SNAP/usr/share/glvnd/egl_vendor.d
   cli:
     command: usr/bin/solvespace-cli
     extensions: [gnome-3-34]
     plugs: [home, removable-media, network]
+  glxinfo:
+    command: usr/bin/glxinfo
+    extensions: [gnome-3-34]
+    plugs: *solvespaceplugs
+    environment : *solvespaceenv
 
 parts:
   solvespace:
