@@ -64,6 +64,7 @@ parts:
     stage-packages:
       - libspnav0
       - libsigc++-2.0-0v5
+      - mesa-utils
 
   cleanup:
     after: [solvespace]
