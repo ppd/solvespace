@@ -21,11 +21,10 @@ jobs:
       install: |
         git submodule update --init
       script: |
-        export PATH="$MSBUILD_PATH:$PATH"
+        export PATH=$MSBUILD_PATH:$PATH
         mkdir build
         cd build
-        cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release
-        nmake
+        cmake .. -G "Visual Studio 15 2017 Win64"" -DCMAKE_BUILD_TYPE=Release
 
     # - stage: deploy
     #   name: "OSX"
