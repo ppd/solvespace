@@ -13,12 +13,12 @@ jobs:
       install: ./.travis/install-debian.sh
       script: ./.travis/build-debian.sh
     - stage: test
-      name: "Windows"
+      name: "Windows Visual Studio 2017"
       os: windows
       install: |
-        cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64
         git submodule update --init
       script: |
+        cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64
         mkdir build
         cd build
         cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release
