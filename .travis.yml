@@ -25,6 +25,9 @@ jobs:
         - cd build
         - cmake .. -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Debug
         - MSBuild.exe "src/solvespace.vcxproj"
+        - MSBuild.exe "src/solvespace-cli.vcxproj"
+        - MSBuild.exe "src/solvespace-testsuite.vcxproj"
+        - bin/Debug/solvespace-testsuite.exe
 
     # - stage: deploy
     #   name: "OSX"
