@@ -16,13 +16,14 @@ jobs:
       name: "Windows"
       os: windows
       install: |
+        cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64
         git submodule update --init
       script: |
         mkdir build
         cd build
         cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release
         nmake
-        
+
     # - stage: deploy
     #   name: "OSX"
     #   os: osx
