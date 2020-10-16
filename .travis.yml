@@ -15,10 +15,13 @@ jobs:
     - stage: test
       name: "Windows Visual Studio 2017"
       os: windows
+      language: cpp
+      env:
+        - MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
       install: |
         git submodule update --init
       script: |
-        cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64
+        export PATH="$MSBUILD_PATH:$PATH"
         mkdir build
         cd build
         cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release
