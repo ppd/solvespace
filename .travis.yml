@@ -62,4 +62,6 @@ jobs:
       arch: arm64
       script: 
         - sudo apt-get update || travis_terminate $?
-        - sudo ./pkg/snap/build.sh --destructive-mode || travis_terminate $?
+        - rsync --filter=":- .gitignore" -r "$TRAVIS_BUILD_DIR"/ "$TRAVIS_BUILD_DIR/pkg/snap/solvespace-snap-src" || travis_terminate $?
+        - cd "$TRAVIS_BUILD_DIR/pkg/snap" || travis_terminate $?
+        - sudo snapcraft --destructive-mode || travis_terminate $?
