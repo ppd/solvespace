@@ -61,7 +61,7 @@ jobs:
       name: Snap arm64
       arch: arm64-graviton2
       group: edge
-      # virt: vm
+      virt: lxd
       # install:
       #   - sudo apt-get update
       #   - sudo apt-get -y install libffi6
