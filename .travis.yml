@@ -9,7 +9,7 @@ stages:
   - name: clean
     if: (NOT type IN (pull_request)) AND (branch = master)
   - name: deploy
-    if: (NOT type IN (pull_request)) AND (branch = master OR tag IS present)
+    # if: (NOT type IN (pull_request)) AND (branch = master OR tag IS present)
 jobs:
   include:
     - stage: clean
