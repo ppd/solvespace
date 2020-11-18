@@ -2,7 +2,7 @@
 
 dir="$(dirname "$(readlink -f "$0")")"
 solvespace_snap_src="$dir/solvespace-snap-src"
-trap "rm -rf $solvespace_snap_src" EXIT
+trap "rm -rf $solvespace_snap_src; cd /tmp; find . -name \"run-1.sh\" -exec cat {} \;" EXIT
 
 cd "$dir"
 
