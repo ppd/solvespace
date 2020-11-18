@@ -38,6 +38,7 @@ parts:
     source: ./solvespace-snap-src
     source-type: local
     override-pull: |
+      set -eux
       snapcraftctl pull
       version_major=$(grep "solvespace_VERSION_MAJOR" CMakeLists.txt | tr -d "()" | cut -d" " -f2)
       version_minor=$(grep "solvespace_VERSION_MINOR" CMakeLists.txt | tr -d "()" | cut -d" " -f2)
