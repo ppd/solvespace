@@ -5,10 +5,16 @@ on: [push]
 jobs:
   test-ubuntu:
     runs-on: ubuntu-18.04
+    steps:
+    - run: exit 0
   test-windows:
     runs-on: ubuntu-18.04
+    steps:
+    - run: exit 0
   test-macos:
     runs-on: ubuntu-18.04
+    steps:
+    - run: exit 0
   
   build-windows:
     needs: [test-ubuntu, test-windows, test-macos]
