@@ -90,7 +90,7 @@ jobs:
     - name: Get Release Upload URL
       env:
         event_name: ${{ github.event_name }}
-        event: ${{ github.event }}
+        event: ${{ toJson(github.event) }}
         edge_upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
       run: |
         if [ "$event_name"="release" ]; then
