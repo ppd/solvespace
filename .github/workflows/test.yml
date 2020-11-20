@@ -19,6 +19,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build & Test
       run: .travis/build-windows.sh
+      shell: bash
   macos:
     runs-on: macos-latest
     steps:
