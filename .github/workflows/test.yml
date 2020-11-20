@@ -1,0 +1,31 @@
+name: Test
+
+on: [push]
+
+jobs:
+  ubuntu:
+      runs-on: ubuntu-18.04
+      steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: false
+      - name: Install Dependencies
+        run: .travis/install-ubuntu.sh
+      - name: Build & Test
+        run: .travis/build-ubuntu.sh
+  windows:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build & Test
+      run: .travis/build-windows.sh
+  macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: false
+    - name: Install Dependencies
+      run: .travis/install-macos.sh
+    - name: Build & Test
+      run: .travis/build-macos.sh
