@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - run: "echo \"hello 2\""
+    - run: exit 1
   test3:
     needs: [test, test2]
     runs-on: ubuntu-latest
