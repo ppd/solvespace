@@ -93,10 +93,9 @@ jobs:
         event: ${{ toJson(github.event) }}
         edge_upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
       run: |
-        if [ "$event_name"="release" ]; then
+        if [ "$event_name" = "release" ]; then
           upload_url=$(echo "$event" | jq ".release.upload_url")
         else
-          echo "Edge Upload URL: $edge_upload_url"
           upload_url="$edge_upload_url"
         fi
         echo "Upload URL: $upload_url"
