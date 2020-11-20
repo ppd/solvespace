@@ -63,31 +63,45 @@ jobs:
         release_name: Edge
         prerelease: true
         body: ${{ github.event.head_commit.message }}
-    - name: Upload solvespace.exe
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: solvespace.exe/solvespace.exe
-        asset_name: solvespace.exe
-        asset_content_type: text/plain
-    - name: Upload SolveSpace.dmg
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: SolveSpace.dmg/SolveSpace.dmg
-        asset_name: SolveSpace.dmg
-        asset_content_type: text/plain
+    # - name: Upload solvespace.exe
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #     asset_path: solvespace.exe/solvespace.exe
+    #     asset_name: solvespace.exe
+    #     asset_content_type: text/plain
+    # - name: Upload SolveSpace.dmg
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #     asset_path: SolveSpace.dmg/SolveSpace.dmg
+    #     asset_name: SolveSpace.dmg
+    #     asset_content_type: text/plain
 
+  upload-release-assets:
+    name: Upload Release Assets
+    needs: [update_edge_release]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get Release Upload URL
+      env:
+        event_name: ${{ github.event_name }}
+        event: ${{ github.event }}
+        edge_upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
+      run: |
+        if [ "$event_name"="release" ]; then
+          upload_url=$(echo "$event" | jq ".release.upload_url")
+        else
+          upload_url="$edge_upload_url"
+        fi
+        echo "Upload URL: $upload_url"
+    - name: Download All Workflow Artifacts
+      uses: actions/download-artifact@v2
 
-  # upload-release-assets:
-  #   name: Upload Release Assets
-  #   needs: [test-ubuntu]
-  #   if: github.event_name == "release"
-  #   runs-on: ubuntu-latest
 
   
 
