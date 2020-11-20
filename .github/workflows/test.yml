@@ -7,7 +7,16 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - run: "echo \"hello\""
-  # ubuntu:
+  test2:
+    runs-on: ubuntu-18.04
+    steps:
+    - run: "echo \"hello 2\""
+  test3:
+    needs: [test, test2]
+    runs-on: ubuntu-latest
+    steps:
+    - run: "echo \"After you\""
+  # test-ubuntu:
   #     runs-on: ubuntu-18.04
   #     steps:
   #     - uses: actions/checkout@v2
@@ -16,7 +25,7 @@ jobs:
   #     - name: Build & Test
   #       run: .travis/build-ubuntu.sh
 
-  # windows:
+  # test-windows:
   #   runs-on: windows-2019
   #   steps:
   #   - uses: actions/checkout@v2
@@ -28,7 +37,7 @@ jobs:
   #     run: .travis/build-windows.sh
   #     shell: bash
 
-  # macos:
+  # test-macos:
   #   runs-on: macos-latest
   #   steps:
   #   - uses: actions/checkout@v2
