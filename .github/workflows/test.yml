@@ -6,123 +6,112 @@ on:
     types: [created]
 
 jobs:
-  test-ubuntu:
-    name: Test Ubuntu
-    runs-on: ubuntu-18.04
-    steps:
-    - run: exit 0
-
-  build-release-windows:
-    needs: [test-ubuntu]
-    name: Build Release Windows
-    runs-on: ubuntu-18.04
-    steps:
-    - run: wget https://github.com/solvespace/solvespace/releases/download/edge/solvespace.exe
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: solvespace.exe
-        path: solvespace.exe
-
-  build-release-macos:
-    needs: [test-ubuntu]
-    name: Build Release macOS
-    runs-on: ubuntu-18.04
-    steps:
-    - run: wget https://github.com/solvespace/solvespace/releases/download/edge/SolveSpace.dmg
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: SolveSpace.dmg
-        path: SolveSpace.dmg
-  
-  upload-release-assets:
-    name: Upload Release Assets
-    needs: [build-release-windows, build-release-macos]
+  deploy-snap-amd64:
+    name: Deploy AMD64 Snap
     runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
-    - name: Download All Workflow Artifacts
-      uses: actions/download-artifact@v2
-    - name: Delete Old Edge Release
-      if: github.event_name == 'push'
-      uses: dev-drprasad/delete-tag-and-release@v0.1.2
-      with:
-        delete_release: true
-        tag_name: edge
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Create New Edge Release
-      if: github.event_name == 'push'
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: edge
-        release_name: Edge
-        prerelease: true
-        body: ${{ github.event.head_commit.message }}
-    - name: Get Release Upload URL
-      id: get_upload_url
-      env:
-        event_name: ${{ github.event_name }}
-        event: ${{ toJson(github.event) }}
-        edge_upload_url: ${{ steps.create_release.outputs.upload_url }}
-      run: |
-        if [ "$event_name" = "release" ]; then
-          upload_url=$(echo "$event" | jq -r ".release.upload_url")
-        else
-          upload_url="$edge_upload_url"
-        fi
-        echo "::set-output name=upload_url::$upload_url"
-        echo "Upload URL: $upload_url"
-    - name: Upload solvespace.exe
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
-        asset_path: solvespace.exe/solvespace.exe
-        asset_name: solvespace.exe
-        asset_content_type: binary/octet-stream
-    - name: Upload SolveSpace.dmg
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
-        asset_path: SolveSpace.dmg/SolveSpace.dmg
-        asset_name: SolveSpace.dmg
-        asset_content_type: binary/octet-stream
+    - uses: actions/checkout@v2
+    - run: pkg/snap/build.sh
 
-  # upload-release-assets:
-  #   name: Upload Release Assets
-  #   needs: [update_edge_release]
+  # deploy-snap-arm64:
+  #   name: Deploy ARM64 Snap
   #   runs-on: ubuntu-latest
   #   steps:
+  #   - uses: actions/checkout@v2
+  #   - uses: docker/setup-qemu-action@v1
+  #   - uses: diddlesnaps/snapcraft-multiarch-action@v1
+  #     with:
+  #       architecture: arm64
+  # test-ubuntu:
+  #   name: Test Ubuntu
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #   - run: exit 0
+
+  # build-release-windows:
+  #   needs: [test-ubuntu]
+  #   name: Build Release Windows
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #   - run: wget https://github.com/solvespace/solvespace/releases/download/edge/solvespace.exe
+  #   - name: Upload Artifact
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: solvespace.exe
+  #       path: solvespace.exe
+
+  # build-release-macos:
+  #   needs: [test-ubuntu]
+  #   name: Build Release macOS
+  #   runs-on: ubuntu-18.04
+  #   steps:
+  #   - run: wget https://github.com/solvespace/solvespace/releases/download/edge/SolveSpace.dmg
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: SolveSpace.dmg
+  #       path: SolveSpace.dmg
+  
+  # upload-release-assets:
+  #   name: Upload Release Assets
+  #   needs: [build-release-windows, build-release-macos]
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+  #   steps:
+  #   - name: Download All Workflow Artifacts
+  #     uses: actions/download-artifact@v2
+  #   - name: Delete Old Edge Release
+  #     if: github.event_name == 'push'
+  #     uses: dev-drprasad/delete-tag-and-release@v0.1.2
+  #     with:
+  #       delete_release: true
+  #       tag_name: edge
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   - name: Create New Edge Release
+  #     if: github.event_name == 'push'
+  #     id: create_release
+  #     uses: actions/create-release@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     with:
+  #       tag_name: edge
+  #       release_name: Edge
+  #       prerelease: true
+  #       body: ${{ github.event.head_commit.message }}
   #   - name: Get Release Upload URL
+  #     id: get_upload_url
   #     env:
   #       event_name: ${{ github.event_name }}
   #       event: ${{ toJson(github.event) }}
-  #       edge_upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
+  #       edge_upload_url: ${{ steps.create_release.outputs.upload_url }}
   #     run: |
   #       if [ "$event_name" = "release" ]; then
-  #         upload_url=$(echo "$event" | jq ".release.upload_url")
+  #         upload_url=$(echo "$event" | jq -r ".release.upload_url")
   #       else
   #         upload_url="$edge_upload_url"
   #       fi
+  #       echo "::set-output name=upload_url::$upload_url"
   #       echo "Upload URL: $upload_url"
-  #   - name: Download All Workflow Artifacts
-  #     uses: actions/download-artifact@v2
-
-
-  
-
-
-
-        
+  #   - name: Upload solvespace.exe
+  #     uses: actions/upload-release-asset@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     with:
+  #       upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
+  #       asset_path: solvespace.exe/solvespace.exe
+  #       asset_name: solvespace.exe
+  #       asset_content_type: binary/octet-stream
+  #   - name: Upload SolveSpace.dmg
+  #     uses: actions/upload-release-asset@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     with:
+  #       upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
+  #       asset_path: SolveSpace.dmg/SolveSpace.dmg
+  #       asset_name: SolveSpace.dmg
+  #       asset_content_type: binary/octet-stream
 
 
   # deploy-windows:
