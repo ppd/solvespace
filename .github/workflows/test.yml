@@ -12,12 +12,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: docker/setup-qemu-action@v1
+    - run: rsync --filter=":- .gitignore" -r ./ pkg/snap/solvespace-snap-src
     - name: Build Snap
-      run: |
-        docker run --rm -it --privileged -v $PWD:$PWD -w $PWD \
-          --platform linux/arm64 \
-          diddledan/snapcraft:core18 \
-          pkg/snap/build.sh
+      uses: diddlesnaps/snapcraft-multiarch-action@v1
+      with:
+        path: pkg/snap
+        architecture: arm64
 
   # deploy-snap-amd64:
   #   name: Deploy AMD64 Snap
