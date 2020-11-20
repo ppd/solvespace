@@ -3,7 +3,7 @@ name: Deploy
 on:
   workflow_run:
     workflows: [Test]
-    # branches: [master, gh-actions]
+    branches: [master]
     types:
       - completed
       - requested
@@ -36,6 +36,7 @@ jobs:
       shell: bash
     - name: Build & Test
       run: .travis/build-windows.sh release
+      shell: bash
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
@@ -52,6 +53,7 @@ jobs:
         shell: bash
       - name: Build & Test
         run: .travis/build-windows.sh release openmp
+        shell: bash
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
