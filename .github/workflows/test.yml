@@ -1,55 +1,104 @@
-name: Test & Deploy
+name: CI
 
 on: [push]
 
 jobs:
   test-ubuntu:
+    name: Test Ubuntu
     runs-on: ubuntu-18.04
     steps:
     - run: exit 0
   test-windows:
+    name: Test Windows
     runs-on: ubuntu-18.04
     steps:
-    - run: exit 0
-  test-macos:
-    runs-on: ubuntu-18.04
-    steps:
-    - run: exit 0
-  
-  build-windows:
-    needs: [test-ubuntu, test-windows, test-macos]
-    runs-on: windows-2019
-    steps:
-    - uses: actions/checkout@v2
-    - name: Install Dependencies
-      run: .travis/install-windows.sh
-      shell: bash
-    - name: Build & Test
-      run: .travis/build-windows.sh release
-      shell: bash
+    - run: touch testfile2
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: windows-exe
-        path: build/bin/RelWithDebInfo/solvespace.exe
-
-  build-windows-openmp:
-    needs: [test-ubuntu, test-windows, test-macos]
-    name: Windows with OpenMP
-    runs-on: windows-2019
+        path: testfile2
+  test-macos:
+    name: Test macOS
+    runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v2
-    - name: Install Dependencies
-      run: .travis/install-windows.sh
-      shell: bash
-    - name: Build & Test
-      run: .travis/build-windows.sh release openmp
-      shell: bash
+    - run: touch testfile1
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: windows-openmp-exe
-        path: build/bin/RelWithDebInfo/solvespace-openmp.exe
+        name: macos-dmg
+        path: testfile1
+
+  update-edge-release:
+    needs: [test-windows, test-macos]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download All Workflow Artifacts
+      uses: actions/download-artifact@v2
+    - name: Delete Old Edge Release
+      uses: dev-drprasad/delete-tag-and-release@v0.1.2
+      with:
+        delete_release: true
+        tag_name: edge
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create New Edge Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: edge
+        release_name: Edge
+        prerelease: true
+        body: ${{ github.event.head_commit.message }}
+    # - name: Upload solvespace.exe
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+
+
+
+        
+
+
+  # deploy-windows:
+  #   needs: [test-ubuntu, test-windows, test-macos]
+  #   name: Deploy Windows
+  #   runs-on: windows-2019
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Install Dependencies
+  #     run: .travis/install-windows.sh
+  #     shell: bash
+  #   - name: Build & Test
+  #     run: .travis/build-windows.sh release
+  #     shell: bash
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: windows-exe
+  #       path: build/bin/RelWithDebInfo/solvespace.exe
+
+  # deploy-windows-openmp:
+  #   needs: [test-ubuntu, test-windows, test-macos]
+  #   name: Deploy Windows with OpenMP
+  #   runs-on: windows-2019
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Install Dependencies
+  #     run: .travis/install-windows.sh
+  #     shell: bash
+  #   - name: Build & Test
+  #     run: .travis/build-windows.sh release openmp
+  #     shell: bash
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: windows-openmp-exe
+  #       path: build/bin/RelWithDebInfo/solvespace-openmp.exe
 
   # test-ubuntu:
   #     runs-on: ubuntu-18.04
