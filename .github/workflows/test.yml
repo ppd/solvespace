@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - run: sudo snap install snapcraft --classic
     - run: pkg/snap/build.sh
 
   # deploy-snap-arm64:
