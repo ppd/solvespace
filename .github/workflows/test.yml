@@ -11,8 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: sudo snap install snapcraft --classic
-    - run: pkg/snap/build.sh
+    - name: Install Snapcraft
+      uses: samuelmeuli/action-snapcraft@v1
+      with:
+        use_lxd: true
+    - name: Build Snap
+      run: sg lxd -c "pkg/snap/build.sh --use-lxd"
 
   # deploy-snap-arm64:
   #   name: Deploy ARM64 Snap
