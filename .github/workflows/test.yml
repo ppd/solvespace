@@ -96,6 +96,7 @@ jobs:
         if [ "$event_name"="release" ]; then
           upload_url=$(echo "$event" | jq ".release.upload_url")
         else
+          echo "Edge Upload URL: $edge_upload_url"
           upload_url="$edge_upload_url"
         fi
         echo "Upload URL: $upload_url"
