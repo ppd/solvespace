@@ -79,7 +79,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: macos-dmg/SolveSpace.dmg
-        asset_name: solvespace.exe
+        asset_name: SolveSpace.dmg
         asset_content_type: text/plain
 
 
