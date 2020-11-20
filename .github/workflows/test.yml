@@ -1,6 +1,9 @@
 name: CI
 
-on: [push]
+on:
+  push:
+  release:
+    types: [created]
 
 jobs:
   test-ubuntu:
@@ -8,10 +11,35 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - run: exit 0
+
+  build-release-windows:
+    needs: [test-ubuntu]
+    name: Build Release Windows
+    runs-on: ubuntu-18.04
+    steps:
+    - run: touch solvespace.exe
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-exe
+        path: solvespace.exe
+
+  build-release-macos:
+    needs: [test-ubuntu]
+    name: Build Release macOS
+    runs-on: ubuntu-18.04
+    steps:
+    - run: touch SolveSpace.dmg
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: macos-dmg
+        path: SolveSpace.dmg
   
   update_edge_release:
     name: Update Edge Release
-    needs: [test-ubuntu]
+    needs: [build-release-windows, build-release-macos]
+    if: github.event_name == "push"
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -35,48 +63,33 @@ jobs:
         release_name: Edge
         prerelease: true
         body: ${{ github.event.head_commit.message }}
-
-  deploy-windows:
-    needs: [update_edge_release]
-    name: Deploy Windows
-    runs-on: ubuntu-18.04
-    steps:
-    - run: touch testfile2
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: solvespace.exe
-        path: testfile2
-    - name: Upload Release Asset
+    - name: Upload solvespace.exe
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
-        asset_path: testfile2
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: windows-exe/solvespace.exe
+        asset_name: solvespace.exe
+        asset_content_type: octet-stream
+    - name: Upload SolveSpace.dmg
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: macos-dmg/SolveSpace.dmg
         asset_name: solvespace.exe
         asset_content_type: octet-stream
 
-  deploy-macos:
-    needs: [update_edge_release]
-    name: Deploy macOS
-    runs-on: ubuntu-18.04
-    steps:
-    - run: touch testfile1
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: SolveSpace.dmg
-        path: testfile1
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
-        asset_path: testfile2
-        asset_name: SolveSpace.dmg
-        asset_content_type: octet-stream
+
+  # upload-release-assets:
+  #   name: Upload Release Assets
+  #   needs: [test-ubuntu]
+  #   if: github.event_name == "release"
+  #   runs-on: ubuntu-latest
+
+  
 
 
 
