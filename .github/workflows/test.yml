@@ -21,7 +21,7 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: windows-exe
+        name: solvespace.exe
         path: solvespace.exe
 
   build-release-macos:
@@ -33,7 +33,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: macos-dmg
+        name: SolveSpace.dmg
         path: SolveSpace.dmg
   
   update_edge_release:
@@ -69,7 +69,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: windows-exe/solvespace.exe
+        asset_path: solvespace.exe/solvespace.exe
         asset_name: solvespace.exe
         asset_content_type: text/plain
     - name: Upload SolveSpace.dmg
@@ -78,7 +78,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: macos-dmg/SolveSpace.dmg
+        asset_path: SolveSpace.dmg/SolveSpace.dmg
         asset_name: SolveSpace.dmg
         asset_content_type: text/plain
 
