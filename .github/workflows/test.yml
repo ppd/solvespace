@@ -39,7 +39,7 @@ jobs:
   update_edge_release:
     name: Update Edge Release
     needs: [build-release-windows, build-release-macos]
-    if: github.event_name == 'push'
+    if: github.event_name == 'skipmeplease'
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
