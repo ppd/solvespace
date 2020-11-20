@@ -8,30 +8,13 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - run: exit 0
-  test-windows:
-    name: Test Windows
-    runs-on: ubuntu-18.04
-    steps:
-    - run: touch testfile2
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: windows-exe
-        path: testfile2
-  test-macos:
-    name: Test macOS
-    runs-on: ubuntu-18.04
-    steps:
-    - run: touch testfile1
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: macos-dmg
-        path: testfile1
-
-  update-edge-release:
-    needs: [test-windows, test-macos]
+  
+  update_edge_release:
+    name: Update Edge Release
+    needs: [test-ubuntu]
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - name: Download All Workflow Artifacts
       uses: actions/download-artifact@v2
@@ -42,17 +25,6 @@ jobs:
         tag_name: edge
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Create Tag
-      uses: actions/github-script@v3
-      with:
-        github-token: ${{ github.token }}
-        script: |
-          github.git.createRef({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            ref: "refs/tags/edge",
-            sha: context.sha
-          })
     - name: Create New Edge Release
       id: create_release
       uses: actions/create-release@v1
@@ -64,12 +36,45 @@ jobs:
         prerelease: true
         body: ${{ github.event.head_commit.message }}
 
-    # - name: Upload solvespace.exe
-    #   uses: actions/upload-release-asset@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+  deploy-windows:
+    needs: [update_edge_release]
+    name: Deploy Windows
+    runs-on: ubuntu-18.04
+    steps:
+    - run: touch testfile2
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: solvespace.exe
+        path: testfile2
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
+        asset_path: testfile2
+        asset_name: solvespace.exe
+
+  deploy-macos:
+    needs: [update_edge_release]
+    name: Deploy macOS
+    runs-on: ubuntu-18.04
+    steps:
+    - run: touch testfile1
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: SolveSpace.dmg
+        path: testfile1
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
+        asset_path: testfile2
+        asset_name: SolveSpace.dmg
 
 
 
