@@ -58,7 +58,7 @@ jobs:
           name: windows-openmp-exe
           path: build/bin/RelWithDebInfo/solvespace-openmp.exe
 
-  update-edge-release:
-    name: Update Edge Release
-    runs-on: ubuntu-latest
-    needs: [macOS, windows, windows-openmp]
+  # update-edge-release:
+  #   name: Update Edge Release
+  #   runs-on: ubuntu-latest
+  #   needs: [macOS, windows, windows-openmp]
