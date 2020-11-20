@@ -23,6 +23,7 @@ jobs:
       osx_image: xcode12.2
       install: ".travis/install-macos.sh"
       script: ".travis/build-macos.sh"
+
     - stage: deploy
       name: macOS
       os: osx
@@ -41,6 +42,7 @@ jobs:
         file: build/bin/SolveSpace.dmg
         on:
           all_branches: true
+
     - stage: test
       name: "Ubuntu"
       os: linux
@@ -52,6 +54,7 @@ jobs:
       os: windows
       install: .travis/install-windows.sh
       script: .travis/build-windows.sh
+      
     - stage: deploy
       name: "Windows"
       os: windows

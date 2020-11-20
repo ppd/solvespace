@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [Test]
+    branches: [master]
+    types:
+      - completed
+      - requested
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Dependencies
+      run: .travis/install-macos.sh
+    - name: Build & Test
+      run: .travis/build-macos.sh release
+    - name: Sign Build
+      run: .travis/sign-macos.sh
+  windows:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Dependencies
+      run: .travis/install-windows.sh
+      shell: bash
+    - name: Build & Test
+      run: .travis/build-windows.sh release
+  windows-openmp:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: .travis/install-windows.sh
+        shell: bash
+      - name: Build & Test
+        run: .travis/build-windows.sh release openmp
