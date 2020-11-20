@@ -11,6 +11,7 @@ jobs:
         run: .travis/install-ubuntu.sh
       - name: Build & Test
         run: .travis/build-ubuntu.sh
+
   windows:
     runs-on: windows-2019
     steps:
@@ -22,6 +23,7 @@ jobs:
     - name: Build & Test
       run: .travis/build-windows.sh
       shell: bash
+
   macos:
     runs-on: macos-latest
     steps:

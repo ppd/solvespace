@@ -3,7 +3,7 @@ name: Deploy
 on:
   workflow_run:
     workflows: [Test]
-    branches: [master]
+    branches: [master, gh-actions]
     types:
       - completed
       - requested
@@ -19,6 +19,12 @@ jobs:
       run: .travis/build-macos.sh release
     - name: Sign Build
       run: .travis/sign-macos.sh
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: macos-dmg
+        path: build/bin/SolveSpace.dmg
+
   windows:
     runs-on: windows-2019
     steps:
@@ -28,6 +34,12 @@ jobs:
       shell: bash
     - name: Build & Test
       run: .travis/build-windows.sh release
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-exe
+        path: build/bin/RelWithDebInfo/solvespace.exe
+
   windows-openmp:
     runs-on: windows-2019
     steps:
@@ -37,3 +49,8 @@ jobs:
         shell: bash
       - name: Build & Test
         run: .travis/build-windows.sh release openmp
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-openmp-exe
+          path: build/bin/RelWithDebInfo/solvespace-openmp.exe
