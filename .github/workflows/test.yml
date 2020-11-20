@@ -71,7 +71,7 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: windows-exe/solvespace.exe
         asset_name: solvespace.exe
-        asset_content_type: application/octet-stream
+        asset_content_type: text/plain
     - name: Upload SolveSpace.dmg
       uses: actions/upload-release-asset@v1
       env:
@@ -80,7 +80,7 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: macos-dmg/SolveSpace.dmg
         asset_name: solvespace.exe
-        asset_content_type: application/octet-stream
+        asset_content_type: text/plain
 
 
   # upload-release-assets:
