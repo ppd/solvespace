@@ -6,17 +6,30 @@ on:
     types: [created]
 
 jobs:
-  deploy-snap-amd64:
-    name: Deploy AMD64 Snap
+  deploy-snap-arm64:
+    name: Deploy ARM64 Snap
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Install Snapcraft
-      uses: samuelmeuli/action-snapcraft@v1
-      with:
-        use_lxd: true
+    - uses: docker/setup-qemu-action@v1
     - name: Build Snap
-      run: sg lxd -c "pkg/snap/build.sh --use-lxd"
+      run: |
+        docker run --rm -it --privileged -v $PWD:$PWD -w $PWD \
+          --platform linux/arm64 \
+          diddledan/snapcraft:core18 \
+          pkg/snap/build.sh
+
+  # deploy-snap-amd64:
+  #   name: Deploy AMD64 Snap
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Install Snapcraft
+  #     uses: samuelmeuli/action-snapcraft@v1
+  #     with:
+  #       use_lxd: true
+  #   - name: Build Snap
+  #     run: sg lxd -c "pkg/snap/build.sh --use-lxd"
 
   # deploy-snap-arm64:
   #   name: Deploy ARM64 Snap
