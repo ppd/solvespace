@@ -17,7 +17,7 @@ jobs:
     name: Build Release Windows
     runs-on: ubuntu-18.04
     steps:
-    - run: touch solvespace.exe
+    - run: echo "Exe" > solvespace.exe
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
@@ -29,7 +29,7 @@ jobs:
     name: Build Release macOS
     runs-on: ubuntu-18.04
     steps:
-    - run: touch SolveSpace.dmg
+    - run: echo "DMG" > SolveSpace.dmg
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
@@ -71,7 +71,7 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: windows-exe/solvespace.exe
         asset_name: solvespace.exe
-        asset_content_type: text/plain
+        asset_content_type: application/octet-stream
     - name: Upload SolveSpace.dmg
       uses: actions/upload-release-asset@v1
       env:
@@ -80,7 +80,7 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: macos-dmg/SolveSpace.dmg
         asset_name: solvespace.exe
-        asset_content_type: text/plain
+        asset_content_type: application/octet-stream
 
 
   # upload-release-assets:
