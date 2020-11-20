@@ -3,7 +3,7 @@ name: CI
 on:
   push:
   release:
-    types: [published]
+    types: [created]
 
 jobs:
   test-ubuntu:
@@ -64,26 +64,26 @@ jobs:
         release_name: Edge
         prerelease: true
         body: ${{ github.event.head_commit.message }}
-    # - name: Get Release Upload URL
-    #   id: get_upload_url
-    #   env:
-    #     event_name: ${{ github.event_name }}
-    #     event: ${{ toJson(github.event) }}
-    #     edge_upload_url: ${{ steps.create_release.outputs.upload_url }}
-    #   run: |
-    #     if [ "$event_name" = "release" ]; then
-    #       upload_url=$(echo "$event" | jq ".release.upload_url")
-    #     else
-    #       upload_url="$edge_upload_url"
-    #     fi
-    #     echo "::set-output name=upload_url::$upload_url"
-    #     echo "Upload URL: $upload_url"
+    - name: Get Release Upload URL
+      id: get_upload_url
+      env:
+        event_name: ${{ github.event_name }}
+        event: ${{ toJson(github.event) }}
+        edge_upload_url: ${{ steps.create_release.outputs.upload_url }}
+      run: |
+        if [ "$event_name" = "release" ]; then
+          upload_url=$(echo "$event" | jq ".release.upload_url")
+        else
+          upload_url="$edge_upload_url"
+        fi
+        echo "::set-output name=upload_url::$upload_url"
+        echo "Upload URL: $upload_url"
     - name: Upload solvespace.exe
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }}
+        upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
         asset_path: solvespace.exe/solvespace.exe
         asset_name: solvespace.exe
         asset_content_type: text/plain
@@ -92,7 +92,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }}
+        upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
         asset_path: SolveSpace.dmg/SolveSpace.dmg
         asset_name: SolveSpace.dmg
         asset_content_type: text/plain
