@@ -81,7 +81,7 @@ jobs:
     - name: Upload solvespace.exe
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       with:
         upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
         asset_path: solvespace.exe/solvespace.exe
@@ -90,7 +90,7 @@ jobs:
     - name: Upload SolveSpace.dmg
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       with:
         upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
         asset_path: SolveSpace.dmg/SolveSpace.dmg
