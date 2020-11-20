@@ -42,6 +42,17 @@ jobs:
         tag_name: edge
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create Tag
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{ github.token }}
+        script: |
+          github.git.createRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: "refs/tags/edge",
+            sha: context.sha
+          })
     - name: Create New Edge Release
       id: create_release
       uses: actions/create-release@v1
@@ -52,7 +63,7 @@ jobs:
         release_name: Edge
         prerelease: true
         body: ${{ github.event.head_commit.message }}
-        
+
     # - name: Upload solvespace.exe
     #   uses: actions/upload-release-asset@v1
     #   env:
