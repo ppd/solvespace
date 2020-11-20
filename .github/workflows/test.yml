@@ -36,10 +36,9 @@ jobs:
         name: SolveSpace.dmg
         path: SolveSpace.dmg
   
-  update_edge_release:
-    name: Update Edge Release
+  upload-release-assets:
+    name: Upload Release Assets
     needs: [build-release-windows, build-release-macos]
-    if: github.event_name == 'skipmeplease'
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -47,6 +46,7 @@ jobs:
     - name: Download All Workflow Artifacts
       uses: actions/download-artifact@v2
     - name: Delete Old Edge Release
+      if: github.event_name == 'push'
       uses: dev-drprasad/delete-tag-and-release@v0.1.2
       with:
         delete_release: true
@@ -54,6 +54,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Create New Edge Release
+      if: github.event_name == 'push'
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -63,6 +64,19 @@ jobs:
         release_name: Edge
         prerelease: true
         body: ${{ github.event.head_commit.message }}
+    - name: Get Release Upload URL
+      env:
+        event_name: ${{ github.event_name }}
+        event: ${{ toJson(github.event) }}
+        edge_upload_url: ${{ steps.create_release.outputs.upload_url }}
+      run: |
+        if [ "$event_name" = "release" ]; then
+          upload_url=$(echo "$event" | jq ".release.upload_url")
+        else
+          upload_url="$edge_upload_url"
+        fi
+        echo "Upload URL: $upload_url"
+
     # - name: Upload solvespace.exe
     #   uses: actions/upload-release-asset@v1
     #   env:
@@ -82,25 +96,25 @@ jobs:
     #     asset_name: SolveSpace.dmg
     #     asset_content_type: text/plain
 
-  upload-release-assets:
-    name: Upload Release Assets
-    needs: [update_edge_release]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Get Release Upload URL
-      env:
-        event_name: ${{ github.event_name }}
-        event: ${{ toJson(github.event) }}
-        edge_upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
-      run: |
-        if [ "$event_name" = "release" ]; then
-          upload_url=$(echo "$event" | jq ".release.upload_url")
-        else
-          upload_url="$edge_upload_url"
-        fi
-        echo "Upload URL: $upload_url"
-    - name: Download All Workflow Artifacts
-      uses: actions/download-artifact@v2
+  # upload-release-assets:
+  #   name: Upload Release Assets
+  #   needs: [update_edge_release]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Get Release Upload URL
+  #     env:
+  #       event_name: ${{ github.event_name }}
+  #       event: ${{ toJson(github.event) }}
+  #       edge_upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
+  #     run: |
+  #       if [ "$event_name" = "release" ]; then
+  #         upload_url=$(echo "$event" | jq ".release.upload_url")
+  #       else
+  #         upload_url="$edge_upload_url"
+  #       fi
+  #       echo "Upload URL: $upload_url"
+  #   - name: Download All Workflow Artifacts
+  #     uses: actions/download-artifact@v2
 
 
   
