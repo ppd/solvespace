@@ -55,6 +55,7 @@ jobs:
         upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
         asset_path: testfile2
         asset_name: solvespace.exe
+        asset_content_type: octet-stream
 
   deploy-macos:
     needs: [update_edge_release]
@@ -75,6 +76,7 @@ jobs:
         upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
         asset_path: testfile2
         asset_name: SolveSpace.dmg
+        asset_content_type: octet-stream
 
 
 
