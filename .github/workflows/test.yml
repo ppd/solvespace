@@ -1,22 +1,50 @@
-name: Test
+name: Test & Deploy
 
 on: [push]
 
 jobs:
-  test:
+  test-ubuntu:
     runs-on: ubuntu-18.04
-    steps:
-    - run: "echo \"hello\""
-  test2:
+  test-windows:
     runs-on: ubuntu-18.04
+  test-macos:
+    runs-on: ubuntu-18.04
+  
+  build-windows:
+    needs: [test-ubuntu, test-windows, test-macos]
+    runs-on: windows-2019
     steps:
-    - run: "echo \"hello 2\""
-    - run: exit 1
-  test3:
-    needs: [test, test2]
-    runs-on: ubuntu-latest
+    - uses: actions/checkout@v2
+    - name: Install Dependencies
+      run: .travis/install-windows.sh
+      shell: bash
+    - name: Build & Test
+      run: .travis/build-windows.sh release
+      shell: bash
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-exe
+        path: build/bin/RelWithDebInfo/solvespace.exe
+
+  build-windows-openmp:
+    needs: [test-ubuntu, test-windows, test-macos]
+    name: Windows with OpenMP
+    runs-on: windows-2019
     steps:
-    - run: "echo \"After you\""
+    - uses: actions/checkout@v2
+    - name: Install Dependencies
+      run: .travis/install-windows.sh
+      shell: bash
+    - name: Build & Test
+      run: .travis/build-windows.sh release openmp
+      shell: bash
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-openmp-exe
+        path: build/bin/RelWithDebInfo/solvespace-openmp.exe
+
   # test-ubuntu:
   #     runs-on: ubuntu-18.04
   #     steps:
