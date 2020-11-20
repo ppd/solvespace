@@ -3,33 +3,36 @@ name: Test
 on: [push]
 
 jobs:
-  ubuntu:
-      runs-on: ubuntu-18.04
-      steps:
-      - uses: actions/checkout@v2
-      - name: Install Dependencies
-        run: .travis/install-ubuntu.sh
-      - name: Build & Test
-        run: .travis/build-ubuntu.sh
-
-  windows:
-    runs-on: windows-2019
+  test:
+    runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v2
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-    - name: Install Dependencies
-      run: .travis/install-windows.sh
-    - name: Build & Test
-      run: .travis/build-windows.sh
-      shell: bash
+    - run: "echo \"hello\""
+  # ubuntu:
+  #     runs-on: ubuntu-18.04
+  #     steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Install Dependencies
+  #       run: .travis/install-ubuntu.sh
+  #     - name: Build & Test
+  #       run: .travis/build-ubuntu.sh
 
-  macos:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Install Dependencies
-      run: .travis/install-macos.sh
-    - name: Build & Test
-      run: .travis/build-macos.sh
-  
+  # windows:
+  #   runs-on: windows-2019
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Add msbuild to PATH
+  #     uses: microsoft/setup-msbuild@v1.0.2
+  #   - name: Install Dependencies
+  #     run: .travis/install-windows.sh
+  #   - name: Build & Test
+  #     run: .travis/build-windows.sh
+  #     shell: bash
+
+  # macos:
+  #   runs-on: macos-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Install Dependencies
+  #     run: .travis/install-macos.sh
+  #   - name: Build & Test
+  #     run: .travis/build-macos.sh
