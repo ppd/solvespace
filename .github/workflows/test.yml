@@ -14,17 +14,18 @@ jobs:
     - name: Build Snap
       uses: diddlesnaps/snapcraft-multiarch-action@v1
       with:
-        snapcraft-args: --debug
-  # deploy-snap-arm64:
-  #   name: Deploy ARM64 Snap
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - uses: docker/setup-qemu-action@v1
-  #   - name: Build Snap
-  #     uses: diddlesnaps/snapcraft-multiarch-action@v1
-  #     with:
-  #       architecture: arm64
+        snapcraft-args: build
+  deploy-snap-arm64:
+    name: Deploy ARM64 Snap
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: docker/setup-qemu-action@v1
+    - name: Build Snap
+      uses: diddlesnaps/snapcraft-multiarch-action@v1
+      with:
+        architecture: arm64
+        snapcraft-args: build
 
   # deploy-snap-amd64:
   #   name: Deploy AMD64 Snap
