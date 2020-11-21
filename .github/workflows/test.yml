@@ -12,7 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build Snap
-      uses: diddlesnaps/snapcraft-multiarch-action@v1
+      uses: diddlesnaps/snapcraft-multiarch-action@v1.1.0
   # deploy-snap-arm64:
   #   name: Deploy ARM64 Snap
   #   runs-on: ubuntu-latest
