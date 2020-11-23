@@ -2,211 +2,226 @@ name: CD
 
 on:
   push:
+    branches:
+      - master
+    tags:
+      - v*
   release:
-    types: [created]
+    types:
+      - created
 
 jobs:
+  test-ubuntu:
+      runs-on: ubuntu-18.04
+      name: Test Ubuntu
+      steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: .travis/install-ubuntu.sh
+      - name: Build & Test
+        run: .travis/build-ubuntu.sh
+
+  test-windows:
+    runs-on: windows-2019
+    name: Test Windows
+    steps:
+    - uses: actions/checkout@v2
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+    - name: Install Dependencies
+      run: .travis/install-windows.sh
+    - name: Build & Test
+      run: .travis/build-windows.sh
+      shell: bash
+
+  test-macos:
+    runs-on: macos-latest
+    name: Test macOS
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Dependencies
+      run: .travis/install-macos.sh
+    - name: Build & Test
+      run: .travis/build-macos.sh
+
+  build-release-windows:
+    needs: [test-ubuntu, test-windows, test-macos]
+    name: Build Release Windows
+    runs-on: ubuntu-18.04
+    steps:
+    - run: wget https://github.com/solvespace/solvespace/releases/download/edge/solvespace.exe
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: solvespace.exe
+        path: solvespace.exe
+  
+  build-release-windows-openmp:
+    needs: [test-ubuntu, test-windows, test-macos]
+    name: Build Release Windows (OpenMP)
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: .travis/install-windows.sh
+        shell: bash
+      - name: Build & Test
+        run: .travis/build-windows.sh release openmp
+        shell: bash
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: solvespace-openmp.exe
+          path: build/bin/RelWithDebInfo/solvespace-openmp.exe
+
+  build-release-macos:
+    needs: [test-ubuntu, test-windows, test-macos]
+    name: Build Release macOS
+    runs-on: ubuntu-18.04
+    steps:
+    - run: wget https://github.com/solvespace/solvespace/releases/download/edge/SolveSpace.dmg
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: SolveSpace.dmg
+        path: SolveSpace.dmg
+        
   deploy-snap-amd64:
+    needs: [test-ubuntu, test-windows, test-macos]
     name: Deploy AMD64 Snap
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Set Up Source
       run: rsync --filter=":- .gitignore" -r ./ pkg/snap/solvespace-snap-src
     - name: Build Snap
+      id: build
       uses: diddlesnaps/snapcraft-multiarch-action@v1
       with:
         path: pkg/snap
-
-  deploy-snap-arm64:
-    name: Deploy ARM64 Snap
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: docker/setup-qemu-action@v1
-    - name: Set Up Source
-      run: rsync --filter=":- .gitignore" -r ./ pkg/snap/solvespace-snap-src
-    - name: Build Snap
-      uses: diddlesnaps/snapcraft-multiarch-action@v1
+    - name: Upload & Release to Edge
+      if: github.ref == 'refs/heads/master'
+      uses: snapcore/action-publish@v1
       with:
-        path: pkg/snap
-        architecture: arm64
-
-  # deploy-snap-amd64:
-  #   name: Deploy AMD64 Snap
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - name: Install Snapcraft
-  #     uses: samuelmeuli/action-snapcraft@v1
-  #     with:
-  #       use_lxd: true
-  #   - name: Build Snap
-  #     run: sg lxd -c "pkg/snap/build.sh --use-lxd"
+        store_login: ${{ secrets.SNAPSTORE_LOGIN }}
+        snap: ${{ steps.build.outputs.snap }}
+        release: edge
+    - name: Upload & Release to Beta + Edge
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: snapcore/action-publish@v1
+      with:
+        store_login: ${{ secrets.SNAPSTORE_LOGIN }}
+        snap: ${{ steps.build.outputs.snap }}
+        release: edge,beta
+    
 
   # deploy-snap-arm64:
+  #   needs: [test-ubuntu, test-windows, test-macos]
   #   name: Deploy ARM64 Snap
+  #   if: github.event_name == 'push'
   #   runs-on: ubuntu-latest
   #   steps:
   #   - uses: actions/checkout@v2
   #   - uses: docker/setup-qemu-action@v1
-  #   - uses: diddlesnaps/snapcraft-multiarch-action@v1
+  #   - name: Set Up Source
+  #     run: rsync --filter=":- .gitignore" -r ./ pkg/snap/solvespace-snap-src
+  #   - name: Build Snap
+  #     id: build
+  #     uses: diddlesnaps/snapcraft-multiarch-action@v1
   #     with:
+  #       path: pkg/snap
   #       architecture: arm64
-  # test-ubuntu:
-  #   name: Test Ubuntu
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #   - run: exit 0
-
-  # build-release-windows:
-  #   needs: [test-ubuntu]
-  #   name: Build Release Windows
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #   - run: wget https://github.com/solvespace/solvespace/releases/download/edge/solvespace.exe
-  #   - name: Upload Artifact
-  #     uses: actions/upload-artifact@v2
+  #   - name: Upload & Release to Edge
+  #     if: github.ref == 'refs/heads/master'
+  #     uses: snapcore/action-publish@v1
   #     with:
-  #       name: solvespace.exe
-  #       path: solvespace.exe
-
-  # build-release-macos:
-  #   needs: [test-ubuntu]
-  #   name: Build Release macOS
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #   - run: wget https://github.com/solvespace/solvespace/releases/download/edge/SolveSpace.dmg
-  #   - name: Upload artifact
-  #     uses: actions/upload-artifact@v2
+  #       store_login: ${{ secrets.SNAPSTORE_LOGIN }}
+  #       snap: ${{ steps.build.outputs.snap }}
+  #       release: edge
+  #   - name: Upload & Release to Beta + Edge
+  #     if: startsWith(github.ref, 'refs/tags/v')
+  #     uses: snapcore/action-publish@v1
   #     with:
-  #       name: SolveSpace.dmg
-  #       path: SolveSpace.dmg
+  #       store_login: ${{ secrets.SNAPSTORE_LOGIN }}
+  #       snap: ${{ steps.build.outputs.snap }}
+  #       release: edge,beta
   
-  # upload-release-assets:
-  #   name: Upload Release Assets
-  #   needs: [build-release-windows, build-release-macos]
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #   steps:
-  #   - name: Download All Workflow Artifacts
-  #     uses: actions/download-artifact@v2
-  #   - name: Delete Old Edge Release
-  #     if: github.event_name == 'push'
-  #     uses: dev-drprasad/delete-tag-and-release@v0.1.2
-  #     with:
-  #       delete_release: true
-  #       tag_name: edge
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #   - name: Create New Edge Release
-  #     if: github.event_name == 'push'
-  #     id: create_release
-  #     uses: actions/create-release@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     with:
-  #       tag_name: edge
-  #       release_name: Edge
-  #       prerelease: true
-  #       body: ${{ github.event.head_commit.message }}
-  #   - name: Get Release Upload URL
-  #     id: get_upload_url
-  #     env:
-  #       event_name: ${{ github.event_name }}
-  #       event: ${{ toJson(github.event) }}
-  #       edge_upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #     run: |
-  #       if [ "$event_name" = "release" ]; then
-  #         upload_url=$(echo "$event" | jq -r ".release.upload_url")
-  #       else
-  #         upload_url="$edge_upload_url"
-  #       fi
-  #       echo "::set-output name=upload_url::$upload_url"
-  #       echo "Upload URL: $upload_url"
-  #   - name: Upload solvespace.exe
-  #     uses: actions/upload-release-asset@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     with:
-  #       upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
-  #       asset_path: solvespace.exe/solvespace.exe
-  #       asset_name: solvespace.exe
-  #       asset_content_type: binary/octet-stream
-  #   - name: Upload SolveSpace.dmg
-  #     uses: actions/upload-release-asset@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     with:
-  #       upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
-  #       asset_path: SolveSpace.dmg/SolveSpace.dmg
-  #       asset_name: SolveSpace.dmg
-  #       asset_content_type: binary/octet-stream
+  update_edge_release:
+    name: Update Edge Release
+    needs: [build-release-macos, build-release-windows, build-release-windows-openmp]
+    if: always()
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+    - name: Delete Old Edge Release
+      if: github.event_name == 'push'
+      uses: dev-drprasad/delete-tag-and-release@v0.1.2
+      with:
+        delete_release: true
+        tag_name: edge
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create New Edge Release
+      if: github.event_name == 'push'
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: edge
+        release_name: Edge
+        prerelease: true
+        body: ${{ github.event.head_commit.message }}
 
-
-  # deploy-windows:
-  #   needs: [test-ubuntu, test-windows, test-macos]
-  #   name: Deploy Windows
-  #   runs-on: windows-2019
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - name: Install Dependencies
-  #     run: .travis/install-windows.sh
-  #     shell: bash
-  #   - name: Build & Test
-  #     run: .travis/build-windows.sh release
-  #     shell: bash
-  #   - name: Upload artifact
-  #     uses: actions/upload-artifact@v2
-  #     with:
-  #       name: windows-exe
-  #       path: build/bin/RelWithDebInfo/solvespace.exe
-
-  # deploy-windows-openmp:
-  #   needs: [test-ubuntu, test-windows, test-macos]
-  #   name: Deploy Windows with OpenMP
-  #   runs-on: windows-2019
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - name: Install Dependencies
-  #     run: .travis/install-windows.sh
-  #     shell: bash
-  #   - name: Build & Test
-  #     run: .travis/build-windows.sh release openmp
-  #     shell: bash
-  #   - name: Upload artifact
-  #     uses: actions/upload-artifact@v2
-  #     with:
-  #       name: windows-openmp-exe
-  #       path: build/bin/RelWithDebInfo/solvespace-openmp.exe
-
-  # test-ubuntu:
-  #     runs-on: ubuntu-18.04
-  #     steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Install Dependencies
-  #       run: .travis/install-ubuntu.sh
-  #     - name: Build & Test
-  #       run: .travis/build-ubuntu.sh
-
-  # test-windows:
-  #   runs-on: windows-2019
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - name: Add msbuild to PATH
-  #     uses: microsoft/setup-msbuild@v1.0.2
-  #   - name: Install Dependencies
-  #     run: .travis/install-windows.sh
-  #   - name: Build & Test
-  #     run: .travis/build-windows.sh
-  #     shell: bash
-
-  # test-macos:
-  #   runs-on: macos-latest
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - name: Install Dependencies
-  #     run: .travis/install-macos.sh
-  #   - name: Build & Test
-  #     run: .travis/build-macos.sh
+  upload-release-assets:
+    name: Upload Release Assets
+    needs: [update_edge_release]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get Release Upload URL
+      id: get_upload_url
+      env:
+        event_name: ${{ github.event_name }}
+        event: ${{ toJson(github.event) }}
+        edge_upload_url: ${{ needs.update_edge_release.outputs.upload_url }}
+      run: |
+        if [ "$event_name" = "release" ]; then
+          upload_url=$(echo "$event" | jq -r ".release.upload_url")
+        else
+          upload_url="$edge_upload_url"
+        fi
+        echo "::set-output name=upload_url::$upload_url"
+        echo "Upload URL: $upload_url"
+    - name: Upload solvespace.exe
+      uses: actions/upload-release-asset@v1
+      continue-on-error: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
+        asset_path: solvespace.exe/solvespace.exe
+        asset_name: solvespace.exe
+        asset_content_type: binary/octet-stream
+    - name: Upload solvespace-openmp.exe
+      uses: actions/upload-release-asset@v1
+      continue-on-error: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
+        asset_path: solvespace-openmp.exe/solvespace-openmp.exe
+        asset_name: solvespace-openmp.exe
+        asset_content_type: binary/octet-stream
+    - name: Upload SolveSpace.dmg
+      uses: actions/upload-release-asset@v1
+      continue-on-error: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
+        asset_path: SolveSpace.dmg/SolveSpace.dmg
+        asset_name: SolveSpace.dmg
+        asset_content_type: binary/octet-stream
