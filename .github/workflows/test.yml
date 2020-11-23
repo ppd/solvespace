@@ -1,0 +1,43 @@
+name: Test
+
+on:
+  push:
+    branches-ignore:
+      - master
+    tags-ignore:
+      - v*
+
+jobs:
+  test-ubuntu:
+      runs-on: ubuntu-18.04
+      name: Test Ubuntu
+      steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: .travis/install-ubuntu.sh
+      - name: Build & Test
+        run: .travis/build-ubuntu.sh
+
+  test-windows:
+    runs-on: windows-2019
+    name: Test Windows
+    steps:
+    - uses: actions/checkout@v2
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+    - name: Install Dependencies
+      run: .travis/install-windows.sh
+      shell: bash
+    - name: Build & Test
+      run: .travis/build-windows.sh
+      shell: bash
+
+  test-macos:
+    runs-on: macos-latest
+    name: Test macOS
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Dependencies
+      run: .travis/install-macos.sh
+    - name: Build & Test
+      run: .travis/build-macos.sh
