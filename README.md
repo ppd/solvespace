@@ -24,7 +24,7 @@ IRC channel [#solvespace at irc.freenode.net][ssirc].
 [ssforum]: http://solvespace.com/forum.pl
 [ssirc]: https://webchat.freenode.net/?channels=solvespace
 
-Installation
+Installation (meaningless change)
 ------------
 
 ### Via official binary packages
