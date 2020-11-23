@@ -87,7 +87,7 @@ jobs:
         path: SolveSpace.dmg
         
   deploy-snap-amd64:
-    needs: [test-ubuntu, test-windows, test-macos]
+    # needs: [test-ubuntu, test-windows, test-macos]
     name: Deploy AMD64 Snap
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
